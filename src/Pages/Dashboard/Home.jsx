@@ -83,18 +83,13 @@ const Home = () => {
       {/* Esto es pa' mostrar el nombre del usuario y las opciones si está logueado */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
         <h1>Bienvenido, {user?.name || "Usuario"}</h1>
-        <button onClick={toggleDrawer}>
+        <aside className="right padding round" style={{ position: 'fixed' }}>
+        <button onClick={toggleDrawer} className="">
           {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
         </button>
+      </aside>
 
-        {isAuthenticated && (
-          <div>
-            <Link to="/product/create">
-              <button style={{ marginRight: "10px" }}>Crear Producto</button>
-            </Link>
-            <button onClick={handleLogout}>Cerrar Sesión</button> {/* Aquí se ejecuta handleLogout */}
-          </div>
-        )}
+
       </div>
 
       {/* Si no hay productos, mostramos esto */}
@@ -112,7 +107,7 @@ const Home = () => {
                   <div className="padding">
                     <h5>{product.name} - ${product.price}</h5>
                     <p>Lorem ipsum dolor sit amet...</p>
-                    <nav>
+                    <nav className="small-space row ">
                       <Link to={`/product/${product.id}`}>
                         <button>Ver</button>
                       </Link>

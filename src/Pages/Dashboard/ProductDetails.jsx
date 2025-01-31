@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import productService from "../../Services/productService";
 import useNavigation from "../../Routes/Navigation";
+import ReactStars from "react-rating-stars-component";  // pa las stars
+import Drawer from "../../MicroComponents/Drawer";
+import { useAuth } from "../../Services/Context"; 
+
+
 
 const ProductDetails = () => {
   const { id } = useParams();  // eeste coso, aquí obtenemos el ID del producto
@@ -12,6 +17,26 @@ const ProductDetails = () => {
   const [review, setReview] = useState("");  // Esto para la reseña que el usuario quiere dejar
   const [rating, setRating] = useState(1);  // La calificación inicial, siempre 1 porque no vamos a empezar con 5 estrellas así de fácil
   const token = localStorage.getItem("token");  // Verificamos si hay sesión activa, esto es importante
+  const isAuthenticated = !!token;  // Si hay token, ya ta logueado
+  const { user } = useAuth();
+
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Estado pa' saber si el menú está abierto
+    const toggleDrawer = () => setIsDrawerOpen((prevState) => !prevState);
+  
+    const drawerOptions = [
+      ...(!isAuthenticated
+        ? [
+            { label: 'Login', link: '/login', icon: 'login' },
+            { label: 'Register', link: '/register', icon: 'person_add' },
+            { label: 'Ir a pagina principal', link: '/', icon: 'house' },
+          ]
+        : []),
+      ...(isAuthenticated
+        ? [
+            { label: 'Ir a pagina principal', link: '/', icon: 'house' },
+          ]
+        : []),
+    ];
 
   // Esto es para obtener la info del producto
   useEffect(() => {
@@ -57,6 +82,14 @@ const ProductDetails = () => {
       alert("Error al enviar la reseña");
     }
   };
+  const handleLogout = async () => {
+    try {
+      await authService.logout(setToken, setUser); 
+      navigate("/");  // Nos vamos al home después de cerrar sesión
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  };
 
   // Si está cargando, mostramos el mensaje de "Cargando..."
   if (loading) return <p>Cargando...</p>;
@@ -64,20 +97,62 @@ const ProductDetails = () => {
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div>
-      <h1>{product.name}</h1>
-      <p>Precio: ${product.price}</p>
-      <p>Rating promedio: {product.average_rating || "Sin calificación"}</p>
+    
+    <main className="responsive">
+      
+      <article className="padding round">
+      <aside className="right padding round" style={{ position: 'fixed' }}>
+        <button onClick={toggleDrawer} className="">
+          {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
+        </button>
+      </aside>
+        <aside className="center medium-width medium-height padding">
+          <img src={product.url} alt="" className="responsive" />
+        </aside>
+        <div className="padding">
+          <h5>{product.name}</h5>
+          <p>{product.description}</p>
+          <nav>
+            <div>
+              Rating promedio:{" "}
+              <ReactStars
+                count={5} // Número máximo de estrellas
+                value={product.average_rating || 0} // Valor de las estrellas (el promedio de la calificación)
+                size={24} // Tamaño de las estrellas
+                edit={false} // Si es true, el usuario puede calificar, si es false solo se muestra
+                color2={"#ffd700"} // Color de las estrellas cuando están llenas
+              />
+            </div>
+            <p>Precio: ${product.price}</p>
+          </nav>
+        </div>
+      </article>
 
       <h2>Reseñas</h2>
       {product.reviews.length > 0 ? (
-        <ul>
-          {product.reviews.map((review) => (
-            <li key={review.id}>
-              <strong>⭐ {review.rating}</strong> - {review.content}
-            </li>
-          ))}
-        </ul>
+
+    <article className="small-height scroll surface">
+      {product.reviews.map((review) => (
+      <div key={review.id} className="row no-padding surface-container round surface-container-highest">
+            <ReactStars
+              count={5}
+              value={review.rating}
+              size={20}
+              edit={false}
+              color2={"#ffd700"}
+            />
+        <div className="small-space"></div>
+          <div className="max">
+          <div className="small-space"></div>
+            <h6 className="small">{review.content}</h6>
+            <div className="small-space"></div>
+          </div>
+        <div className="small-space"></div>
+        <hr />
+      </div>
+    ))}
+  </article>
+  
       ) : (
         <p>No hay reseñas para este producto.</p>
       )}
@@ -105,18 +180,24 @@ const ProductDetails = () => {
           <button type="submit">Enviar</button>
         </form>
       )}
+      
 
-      <a
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-          goToHome();  // Esto nos lleva al home, como si fuera un botón
-        }}
-      >
-        <i>home</i>
-        <div>Ir al dashboard</div>
-      </a>
-    </div>
+
+
+
+
+
+
+ 
+      {isDrawerOpen && (
+        <Drawer
+          options={drawerOptions}
+          closeDrawer={toggleDrawer}
+          user={user}
+          handleLogout={handleLogout} // Pasamos handleLogout como prop
+        />
+      )}
+    </main>
   );
 };
 

@@ -1,11 +1,40 @@
 // Login.js
-import React from 'react';
+import { React, useState } from 'react';
 import { useForm } from 'react-hook-form'; // Esto es pa' manejar el formulario fácilmente
 import { useAuth } from "../../Services/Context"; // Esto es pa' usar el contexto de autenticación
 import authService from '../../Services/authService';  // Esto es pa' llamar a las funciones de autenticación
 import useNavigation from "../../Routes/Navigation"; // Esto es pa' navegar entre páginas
+import Drawer from '../../MicroComponents/Drawer';
+
+
+
+
 
 const Login = () => {
+  const token = localStorage.getItem("token");  // Verificamos si hay sesión activa, esto es importante
+  const isAuthenticated = !!token;  // Si hay token, ya ta logueado
+    const { user } = useAuth();
+  
+      const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Estado pa' saber si el menú está abierto
+      const toggleDrawer = () => setIsDrawerOpen((prevState) => !prevState);
+    
+      const drawerOptions = [
+        ...(!isAuthenticated
+          ? [
+              
+              { label: 'Register', link: '/register', icon: 'person_add' },
+              { label: 'Ir a pagina principal', link: '/', icon: 'house' },
+            ]
+          : []),
+        ...(isAuthenticated
+          ? [
+              { label: 'Ir a pagina principal', link: '/', icon: 'house' },
+            ]
+          : []),
+      ];
+
+
+
   // Esto es pa' manejar el formulario, los errores y validaciones
   const { register, handleSubmit, formState: { errors } } = useForm();
 
@@ -35,13 +64,27 @@ const Login = () => {
       console.log('Error en el login', response.message);
     }
   };
+  const handleLogout = async () => {
+    try {
+      await authService.logout(setToken, setUser); 
+      navigate("/");  // Nos vamos al home después de cerrar sesión
+    } catch (error) {
+      console.error("Error al cerrar sesión:", error);
+    }
+  };
 
   return (
     <main className="responsive">
+      <aside className="right padding round" style={{ position: 'fixed' }}>
+        <button onClick={toggleDrawer} className="">
+          {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
+        </button>
+      </aside>
       {/* Este es el formulario de login */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="small-space"></div>
         <h1>Inicio de sesión</h1>
+        
 
         {/* Este es el campo para ingresar las credenciales */}
         <fieldset className='red-border'>
@@ -67,6 +110,15 @@ const Login = () => {
           </div>
         </fieldset>
       </form>
+
+      {isDrawerOpen && (
+        <Drawer
+          options={drawerOptions}
+          closeDrawer={toggleDrawer}
+          user={user}
+          handleLogout={handleLogout} // Pasamos handleLogout como prop
+        />
+      )}
     </main>
   );
 };
