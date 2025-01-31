@@ -5,6 +5,7 @@ import Home from '../Pages/Dashboard/Home'; // el home
 import ProductDetails from '../Pages/Dashboard/ProductDetails'; // los details
 import ProductManagement from '../Pages/Product/ProductManagement'; // esto pa gestionar productos (Crear y Editar)
 import Register from '../Pages/Auth/Register'; //el registro
+import ProtectedRoute from './ProtectedRoute';
 
 /**
  * Componente principal de rutas de la aplicación.
@@ -22,13 +23,31 @@ import Register from '../Pages/Auth/Register'; //el registro
  */
 const RoutesComponent = () => {
   return (
-    <Routes>      
-      <Route path="/login" element={<Login />} />      
+    <Routes>
+      <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/" element={<Home />} />
       <Route path="/product/:id" element={<ProductDetails />} />
-      <Route path="/product/edit/:id" element={<ProductManagement />} />
-      <Route path="/product/create" element={<ProductManagement />} />
+
+      {/* Ruta protegida para editar un producto */}
+      <Route
+        path="/product/edit/:id"
+        element={
+          <ProtectedRoute>
+            <ProductManagement />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Ruta protegida para crear un producto */}
+      <Route
+        path="/product/create"
+        element={
+          <ProtectedRoute>
+            <ProductManagement />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 };

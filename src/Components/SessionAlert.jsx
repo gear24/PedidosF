@@ -150,10 +150,10 @@ const SessionAlert = ({ onSessionRenewed, setToken, setUser }) => {
         <dialog ref={dialogRef} className="bottom active">
           <p>¡Tu sesión está a punto de expirar! ¿Quieres seguir navegando?</p>
           <nav className="right-align">
-            <button onClick={handleLogout} className="inverse-primary-border ">
+            <button onClick={handleLogout} className="border lime-border lime9  black-text">
               Cerrar sesión
             </button>
-            <button onClick={handleRenewSession} className="inverse-primary-border">
+            <button onClick={handleRenewSession} className="border green7 green-border black-text">
               Sí, seguir navegando
             </button>
           </nav>

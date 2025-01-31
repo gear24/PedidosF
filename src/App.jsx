@@ -7,6 +7,7 @@ import "beercss";  // Estilos de BeerCSS, porque nos gusta lo sencillo
 import "material-dynamic-colors"; // Estilos dinámicos de Material, para dar flow
 
 const App = () => {
+  
   // Establecer los estados de token y usuario
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [user, setUser] = useState(null);

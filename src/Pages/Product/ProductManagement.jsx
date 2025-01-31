@@ -3,13 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import productService from "../../Services/productService";
 import { useAuth } from "../../Services/Context";
 import Drawer from "../../MicroComponents/Drawer";
-
-
+import Header from "../../MicroComponents/Header";
 
 const ProductManagement = () => {
   const { id } = useParams(); // Si hay ID, vamos a cargar el producto, si no, es para crear uno nuevo
   const navigate = useNavigate(); // Para hacer el redireccionamiento después de guardar
-  const { token } = useAuth(); // Necesitamos el token para guardar el producto
+  const { token, user } = useAuth(); // Necesitamos el token para guardar el producto
 
   const [product, setProduct] = useState({
     name: "",
@@ -23,26 +22,18 @@ const ProductManagement = () => {
   const [loading, setLoading] = useState(false); // Para el "Guardando..." mientras todo sucede
   const [error, setError] = useState(null); // Si algo sale mal, esto nos lo dice
 
-    const isAuthenticated = !!token;  // Si hay token, ya ta logueado
-      const { user } = useAuth();
-    
-        const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Estado pa' saber si el menú está abierto
-        const toggleDrawer = () => setIsDrawerOpen((prevState) => !prevState);
-      
-        const drawerOptions = [
-          ...(!isAuthenticated
-            ? [
-                
-                
-                { label: 'Ir a pagina principal', link: '/', icon: 'house' },
-              ]
-            : []),
-          ...(isAuthenticated
-            ? [
-                { label: 'Ir a pagina principal', link: '/', icon: 'house' },
-              ]
-            : []),
-        ];
+  const isAuthenticated = !!token; // Si hay token, ya ta logueado
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Estado pa' saber si el menú está abierto
+  const toggleDrawer = () => setIsDrawerOpen((prevState) => !prevState);
+
+  const drawerOptions = [
+    ...(!isAuthenticated
+      ? [{ label: "Ir a pagina principal", link: "/", icon: "house" }]
+      : []),
+    ...(isAuthenticated
+      ? [{ label: "Ir a pagina principal", link: "/", icon: "house" }]
+      : []),
+  ];
 
   // Esto es para cargar el producto si ya tenemos un ID (porque, si no, estamos creando algo nuevo)
   useEffect(() => {
@@ -70,13 +61,24 @@ const ProductManagement = () => {
   const handleChange = (e) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
   };
-  const handleLogout = async () => {
-    try {
-      await authService.logout(setToken, setUser); 
-      navigate("/");  // Nos vamos al home después de cerrar sesión
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-    }
+
+  // Función para mostrar un Snackbar personalizado
+  const showSnackbar = (message, color = "blue", icon = "info", duration = 4000) => {
+    const snackbar = document.createElement("div");
+    snackbar.className = `snackbar active ${color}`; // Agregamos el color como clase
+    snackbar.innerHTML = `
+      <i>${icon}</i> <!-- Usamos el ícono proporcionado -->
+      <span>${message}</span>
+    `;
+    document.body.appendChild(snackbar);
+
+    // Ocultar el Snackbar después de `duration` milisegundos
+    setTimeout(() => {
+      snackbar.classList.remove("active");
+      setTimeout(() => {
+        document.body.removeChild(snackbar);
+      }, 300); // Esperar a que termine la animación
+    }, duration);
   };
 
   // Aquí es donde se guarda el producto, ya sea para actualizar o crear
@@ -88,29 +90,25 @@ const ProductManagement = () => {
       if (id) {
         // Si hay ID, estamos actualizando
         await productService.updateProduct(id, product, token);
-        alert("Producto actualizado con éxito");
+        showSnackbar("Producto actualizado con éxito", "amber", "edit");
       } else {
         // Si no hay ID, estamos creando un nuevo producto
         await productService.addProduct(product, token);
-        alert("Producto creado con éxito");
+        showSnackbar("Producto creado con éxito", "green", "check_circle");
       }
       navigate("/"); // Nos redirigimos al home después de guardar
     } catch (error) {
-      setError("Error al guardar el producto"); // Si algo falla, lo informamos
+      setError("Error al guardar el producto");
+      showSnackbar("Error al guardar el producto", "red", "error", 6000); // Mostrar el error en el Snackbar
     } finally {
       setLoading(false); // Cuando termine, ya no estamos cargando
     }
-
-
   };
 
   return (
     <main className="responsive">
-      <aside className="right padding round" style={{ position: 'fixed' }}>
-        <button onClick={toggleDrawer} className="border pink-border orange-text">
-          {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
-        </button>
-      </aside>
+      <Header isAuthenticated={isAuthenticated} drawerOptions={drawerOptions} />
+
       <h1>{id ? "Editar Producto" : "Crear Producto"}</h1> {/* Cambiamos el título según si es creación o edición */}
       {error && <p style={{ color: "red" }}>{error}</p>} {/* Si hay error, lo mostramos en rojo */}
 
@@ -182,13 +180,12 @@ const ProductManagement = () => {
         </fieldset>
       </form>
 
-
       {isDrawerOpen && (
         <Drawer
           options={drawerOptions}
           closeDrawer={toggleDrawer}
           user={user}
-          handleLogout={handleLogout} // Pasamos handleLogout como prop
+          handleLogout={() => {}} // Pasamos handleLogout como prop
         />
       )}
     </main>

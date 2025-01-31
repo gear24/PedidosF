@@ -5,7 +5,7 @@ import authService from '../../Services/authService'; // Pa' hacer el login desp
 import useNavigation from "../../Routes/Navigation"; // Pa' navegar entre páginas
 import { Context,useAuth } from '../../Services/Context'; // Pa' acceder al contexto de autenticación
 import Drawer from '../../MicroComponents/Drawer';
-
+import Header from '../../MicroComponents/HEader';
 
 const Register = () => {
   // Esto es pa' manejar el formulario, las validaciones y los errores
@@ -39,14 +39,7 @@ const Register = () => {
             : []),
         ];
 
-        const handleLogout = async () => {
-          try {
-            await authService.logout(setToken, setUser); 
-            navigate("/");  // Nos vamos al home después de cerrar sesión
-          } catch (error) {
-            console.error("Error al cerrar sesión:", error);
-          }
-        };
+
 
   /**
    * Esta función se ejecuta cuando el formulario se envía.
@@ -94,14 +87,12 @@ const Register = () => {
 
   return (
     <main className="responsive">
-            <aside className="right padding round" style={{ position: 'fixed' }}>
-        <button onClick={toggleDrawer} className="border pink-border orange-text">
-          {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
-        </button>
-      </aside>
+      <Header  goToHome={goToHome} toggleDrawer={toggleDrawer} isDrawerOpen={isDrawerOpen} drawerOptions={drawerOptions}/>
+    
+
       {/* Este es el formulario de registro */}
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="small-space"></div>
+        
         <h1>Registro</h1>
 
         {/* Este es el campo para ingresar los datos del usuario */}
@@ -138,7 +129,7 @@ const Register = () => {
                 required: "La contraseña es requerida",
                 minLength: {
                   value: 9,
-                  message: "La contraseña debe tener al menos 6 caracteres"
+                  message: "La contraseña debe tener al menos 9 caracteres"
                 }
               })} 
               type="password" 

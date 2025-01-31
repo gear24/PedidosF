@@ -4,7 +4,7 @@ import { useAuth } from "../../Services/Context"; // Esto es pa' usar el context
 import authService from '../../Services/authService';  // Esto es pa' llamar a las funciones de autenticación
 import useNavigation from "../../Routes/Navigation"; // Esto es pa' navegar entre páginas
 import Drawer from '../../MicroComponents/Drawer';
-
+import Header from '../../MicroComponents/HEader';
 
 
 
@@ -63,22 +63,13 @@ const Login = () => {
       console.log('Error en el login', response.message);
     }
   };
-  const handleLogout = async () => {
-    try {
-      await authService.logout(setToken, setUser); 
-      navigate("/");  // Nos vamos al home después de cerrar sesión
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-    }
-  };
+
 
   return (
     <main className="responsive">
-      <aside className="right padding round" style={{ position: 'fixed' }}>
-        <button onClick={toggleDrawer} className="border pink-border orange-text">
-          {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
-        </button>
-      </aside>
+    <Header isAuthenticated={isAuthenticated} drawerOptions={drawerOptions} />
+    
+
       {/* Este es el formulario de login */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="small-space"></div>
@@ -115,7 +106,7 @@ const Login = () => {
           options={drawerOptions}
           closeDrawer={toggleDrawer}
           user={user}
-          handleLogout={handleLogout} // Pasamos handleLogout como prop
+          
         />
       )}
     </main>

@@ -5,6 +5,7 @@ import useNavigation from "../../Routes/Navigation";
 import ReactStars from "react-rating-stars-component";  // pa las stars
 import Drawer from "../../MicroComponents/Drawer";
 import { useAuth } from "../../Services/Context"; 
+import Header from "../../MicroComponents/HEader";
 
 
 
@@ -82,14 +83,7 @@ const ProductDetails = () => {
       alert("Error al enviar la reseña");
     }
   };
-  const handleLogout = async () => {
-    try {
-      await authService.logout(setToken, setUser); 
-      navigate("/");  // Nos vamos al home después de cerrar sesión
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-    }
-  };
+
 
   // Si está cargando, mostramos el mensaje de "Cargando..."
   if (loading) return <p>Cargando...</p>;
@@ -99,13 +93,10 @@ const ProductDetails = () => {
   return (
     
     <main className="responsive">
-      
+      <Header isAuthenticated={isAuthenticated} drawerOptions={drawerOptions} />
+
+      <div className="small-space"></div>
       <article className="padding round border surface deep-orange-border grey-text">
-      <aside className="right padding round" style={{ position: 'fixed' }}>
-        <button onClick={toggleDrawer} className="border pink-border orange-text">
-          {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
-        </button>
-      </aside>
 
         <aside className="center medium-width medium-height padding">
           <img src={product.url} alt="" className="responsive" />
@@ -208,22 +199,9 @@ const ProductDetails = () => {
   </>
 )}
       
-
-
-
-
-
-
-
- 
       {isDrawerOpen && (
-        <Drawer
-          options={drawerOptions}
-          closeDrawer={toggleDrawer}
-          user={user}
-          handleLogout={handleLogout} // Pasamos handleLogout como prop
-        />
-      )}
+      <Drawer options={drawerOptions} closeDrawer={toggleDrawer} user={user} handleLogout={handleLogout} />
+    )}
     </main>
   );
 };
