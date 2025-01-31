@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import authService from "../Services/authService";
 
+
+
 /**
  * Componente `SessionAlert`: Gestiona la alerta de sesión y la renovación del token.
  * 
@@ -13,11 +15,12 @@ import authService from "../Services/authService";
 const SessionAlert = ({ onSessionRenewed, setToken, setUser }) => {
   const [showAlert, setShowAlert] = useState(false);
   const logoutTimeout = useRef(null); // Usamos useRef para mantener el timeout entre renders
+  const dialogRef = useRef(null); // Referencia al diálogo
 
   useEffect(() => {
     let checkInterval;
 
-    /**
+        /**
      * Verifica el estado de la sesión y muestra una alerta si el token está a punto de expirar.
      */
     const checkSession = () => {
@@ -34,6 +37,9 @@ const SessionAlert = ({ onSessionRenewed, setToken, setUser }) => {
       // Mostrar alerta 1 minuto antes de expirar
       if (timeUntilExpiration <= 1 * 60 * 1000 && timeUntilExpiration > 0) {
         setShowAlert(true);
+        if (dialogRef.current) {
+          dialogRef.current.showModal(); // Abrir el diálogo
+        }
 
         // Reemplazar el logoutTimeout con el nuevo tiempo de expiración
         if (logoutTimeout.current) clearTimeout(logoutTimeout.current);
@@ -63,7 +69,8 @@ const SessionAlert = ({ onSessionRenewed, setToken, setUser }) => {
     };
   }, []);
 
-  /**
+
+    /**
    * Obtiene el tiempo de expiración del token.
    * 
    * @param {string} token - Token de autenticación.
@@ -79,7 +86,7 @@ const SessionAlert = ({ onSessionRenewed, setToken, setUser }) => {
     return decodedToken.exp * 1000;
   };
 
-  /**
+    /**
    * Renueva la sesión obteniendo un nuevo token y actualizando el tiempo de expiración.
    */
   const handleRenewSession = async () => {
@@ -104,6 +111,9 @@ const SessionAlert = ({ onSessionRenewed, setToken, setUser }) => {
         }, newExpirationTime - Date.now());
 
         setShowAlert(false);
+        if (dialogRef.current) {
+          dialogRef.current.close(); // Cerrar el diálogo
+        }
       } else {
         console.error("No se pudo renovar la sesión");
         handleLogout();
@@ -114,7 +124,7 @@ const SessionAlert = ({ onSessionRenewed, setToken, setUser }) => {
     }
   };
 
-  /**
+    /**
    * Cierra la sesión del usuario, eliminando el token y recargando la página.
    */
   const handleLogout = async () => {
@@ -137,11 +147,17 @@ const SessionAlert = ({ onSessionRenewed, setToken, setUser }) => {
   return (
     <>
       {showAlert && (
-        <div className="session-alert">
+        <dialog ref={dialogRef} className="bottom active">
           <p>¡Tu sesión está a punto de expirar! ¿Quieres seguir navegando?</p>
-          <button onClick={handleRenewSession}>Sí, seguir navegando</button>
-          <button onClick={handleLogout}>Cerrar sesión</button>
-        </div>
+          <nav className="right-align">
+            <button onClick={handleLogout} className="border">
+              Cerrar sesión
+            </button>
+            <button onClick={handleRenewSession} className="border">
+              Sí, seguir navegando
+            </button>
+          </nav>
+        </dialog>
       )}
     </>
   );
