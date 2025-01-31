@@ -5,6 +5,7 @@ import productService from "../../Services/productService";
 import { MutatingDots } from "react-loader-spinner"; 
 import { Link, useNavigate } from "react-router-dom"; 
 import authService from "../../Services/authService";
+import Drawer from "../../MicroComponents/Drawer";
 
 const Home = () => {
   // Sacamos el usuario y token del contexto
@@ -15,6 +16,17 @@ const Home = () => {
   const [error, setError] = useState(null); 
   const isAuthenticated = !!token;  // Si hay token, ya ta logueado
   const navigate = useNavigate();  
+
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Estado pa' saber si el menú está abierto
+    const toggleDrawer = () => setIsDrawerOpen((prevState) => !prevState);
+
+
+  const drawerOptions = [
+    { label: 'Crear Tarea', link: '/task/create', icon: 'create' },
+    { label: 'Login', link: '/login', icon: 'login' },
+    { label: 'Register', link: '/register', icon: 'person_add' },
+    { label: 'Cerrar Sesión', link: '/logout', icon: 'exit_to_app' },
+  ];
 
   // useEffect que se ejecuta pa' cargar los productos cuando el token cambia
   useEffect(() => {
@@ -83,7 +95,7 @@ const Home = () => {
   }
 
   return (
-    <div className="home">
+    <main className="responsive">
       {/* Esto es pa' mostrar el nombre del usuario y las opciones si está logueado */}
       <div
         style={{
@@ -91,9 +103,15 @@ const Home = () => {
           justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "20px",
-        }}
-      >
-        <h1>Bienvenido, {user?.name || "Usuario"}</h1>
+        }}>
+        <h1>Bienvenido, {user?.name || "Usuario"}</h1>        
+        <button onClick={toggleDrawer}>
+          {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
+        </button>
+
+
+
+
         {isAuthenticated && (
           <div>
             {/* Botón para crear un producto */}
@@ -157,7 +175,10 @@ const Home = () => {
           ))}
         </div>
       )}
-    </div>
+            {isDrawerOpen && (
+        <Drawer options={drawerOptions} closeDrawer={toggleDrawer} />
+      )}
+    </main>
   );
 };
 
