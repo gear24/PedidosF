@@ -1,4 +1,3 @@
-// Login.js
 import { React, useState } from 'react';
 import { useForm } from 'react-hook-form'; // Esto es pa' manejar el formulario fácilmente
 import { useAuth } from "../../Services/Context"; // Esto es pa' usar el contexto de autenticación
@@ -76,7 +75,7 @@ const Login = () => {
   return (
     <main className="responsive">
       <aside className="right padding round" style={{ position: 'fixed' }}>
-        <button onClick={toggleDrawer} className="">
+        <button onClick={toggleDrawer} className="border pink-border orange-text">
           {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
         </button>
       </aside>

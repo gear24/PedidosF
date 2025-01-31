@@ -100,12 +100,13 @@ const ProductDetails = () => {
     
     <main className="responsive">
       
-      <article className="padding round">
+      <article className="padding round border surface deep-orange-border grey-text">
       <aside className="right padding round" style={{ position: 'fixed' }}>
-        <button onClick={toggleDrawer} className="">
+        <button onClick={toggleDrawer} className="border pink-border orange-text">
           {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
         </button>
       </aside>
+
         <aside className="center medium-width medium-height padding">
           <img src={product.url} alt="" className="responsive" />
         </aside>
@@ -131,7 +132,7 @@ const ProductDetails = () => {
       <h2>Reseñas</h2>
       {product.reviews.length > 0 ? (
 
-    <article className="small-height scroll surface">
+    <article className="small-height scroll background">
       {product.reviews.map((review) => (
       <div key={review.id} className="row no-padding surface-container round surface-container-highest">
             <ReactStars
@@ -157,29 +158,55 @@ const ProductDetails = () => {
         <p>No hay reseñas para este producto.</p>
       )}
 
-      {token && (
-        <form onSubmit={handleReviewSubmit}>
-          <h3>Deja tu reseña</h3>
-          <label>
-            ⭐ Rating:
-            <select value={rating} onChange={(e) => setRating(e.target.value)}>
-              {[1, 2, 3, 4, 5].map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
-            </select>
-          </label>
-          <br />
-          <textarea
+{token && (
+  <>
+    <h3>Deja tu reseña</h3>
+    <form onSubmit={handleReviewSubmit} className="responsive">
+      <div className="round border lime-border padding">
+      
+
+        {/* Campo para la calificación */}
+        <div className="field label suffix border amber-border">          
+          <select
+            value={rating}
+            onChange={(e) => setRating(Number(e.target.value))} 
+            className="border amber-border"
+          >
+            {[1, 2, 3, 4, 5].map((num) => (
+              <option key={num} value={num} >
+                {num}
+              </option>
+            ))}
+          </select>
+          <label >Rating:</label>
+          <i>⭐</i>
+        </div>
+
+        {/* Campo para la reseña */}
+        <div className="field textarea label border amber-border">
+        <textarea 
             value={review}
-            onChange={(e) => setReview(e.target.value)}
-            placeholder="Escribe tu reseña..."
+            onChange={(e) => setReview(e.target.value)}            
+            className="border amber-border"
+            rows="4" // Número de filas del textarea
           />
-          <br />
-          <button type="submit">Enviar</button>
-        </form>
-      )}
+            <label>Escribe tu reseña...</label>
+
+        </div>
+
+        {/* Botón de enviar */}
+        <div className="right-align">
+          <button type="submit" className="responsive border yellow-border amber-text">
+            Enviar
+          </button>
+        </div>
+        {/* <div class="space"></div> */}
+
+      </div>
+      
+    </form>
+  </>
+)}
       
 
 

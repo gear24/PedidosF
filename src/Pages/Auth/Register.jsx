@@ -1,9 +1,11 @@
-import React, { useContext } from 'react'; 
+import React, { useContext,useState } from 'react'; 
 import { useForm } from 'react-hook-form'; // Esto es pa' manejar el formulario de registro fácil
 import userService from '../../Services/userService'; // Pa' crear el usuario en el backend
 import authService from '../../Services/authService'; // Pa' hacer el login después del registro
 import useNavigation from "../../Routes/Navigation"; // Pa' navegar entre páginas
-import { Context } from '../../Services/Context'; // Pa' acceder al contexto de autenticación
+import { Context,useAuth } from '../../Services/Context'; // Pa' acceder al contexto de autenticación
+import Drawer from '../../MicroComponents/Drawer';
+
 
 const Register = () => {
   // Esto es pa' manejar el formulario, las validaciones y los errores
@@ -14,6 +16,37 @@ const Register = () => {
 
   // Esto es pa' actualizar el usuario y el token en el contexto
   const { setUser, setToken } = useContext(Context);
+
+    const token = localStorage.getItem("token");  // Verificamos si hay sesión activa, esto es importante
+    const isAuthenticated = !!token;  // Si hay token, ya ta logueado
+      const { user } = useAuth();
+    
+        const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Estado pa' saber si el menú está abierto
+        const toggleDrawer = () => setIsDrawerOpen((prevState) => !prevState);
+      
+        const drawerOptions = [
+          ...(!isAuthenticated
+            ? [
+                
+                { label: 'Login', link: '/login', icon: 'login' },
+                { label: 'Ir a pagina principal', link: '/', icon: 'house' },
+              ]
+            : []),
+          ...(isAuthenticated
+            ? [
+                { label: 'Ir a pagina principal', link: '/', icon: 'house' },
+              ]
+            : []),
+        ];
+
+        const handleLogout = async () => {
+          try {
+            await authService.logout(setToken, setUser); 
+            navigate("/");  // Nos vamos al home después de cerrar sesión
+          } catch (error) {
+            console.error("Error al cerrar sesión:", error);
+          }
+        };
 
   /**
    * Esta función se ejecuta cuando el formulario se envía.
@@ -56,10 +89,16 @@ const Register = () => {
         message: error.message || 'Error en el registro. Por favor, intenta nuevamente.'
       });
     }
+    
   };
 
   return (
     <main className="responsive">
+            <aside className="right padding round" style={{ position: 'fixed' }}>
+        <button onClick={toggleDrawer} className="border pink-border orange-text">
+          {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
+        </button>
+      </aside>
       {/* Este es el formulario de registro */}
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="small-space"></div>
@@ -98,7 +137,7 @@ const Register = () => {
               {...register("password", { 
                 required: "La contraseña es requerida",
                 minLength: {
-                  value: 6,
+                  value: 9,
                   message: "La contraseña debe tener al menos 6 caracteres"
                 }
               })} 
@@ -119,6 +158,14 @@ const Register = () => {
           </div>
         </fieldset>
       </form>
+      {isDrawerOpen && (
+        <Drawer
+          options={drawerOptions}
+          closeDrawer={toggleDrawer}
+          user={user}
+          handleLogout={handleLogout} // Pasamos handleLogout como prop
+        />
+      )}
     </main>
   );
 };

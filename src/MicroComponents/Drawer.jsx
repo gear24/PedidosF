@@ -5,7 +5,7 @@ const Drawer = ({ options, closeDrawer, user, handleLogout }) => {
   const navigate = useNavigate(); // Usamos useNavigate para redirigir
 
   return (
-    <dialog className="left no-padding" open>
+    <dialog className="left no-padding surface-dim " open>
       <nav className="drawer">
         <header>
           <nav>
@@ -20,19 +20,25 @@ const Drawer = ({ options, closeDrawer, user, handleLogout }) => {
         <div>
           {/* Mostrar nombre del usuario si está logueado */}
           <p>{user ? `Hola, ${user.name}` : "Bienvenido, Usuario"}</p>
+          <hr className="small red-border" />
         </div>
 
         {options.map((option, index) => (
-          <button
-          key={index}
-          className="transparent" // Aplicamos la clase transparent
-          onClick={() => navigate(option.link)} // Redirigimos al hacer clic
-        >
-          <div>
-            <i>{option.icon}</i>
-            <span>{option.label}</span>
-          </div>
-        </button>
+        <div key={index}>
+          
+          <button 
+            className="transparent responsive" // Aplicamos la clase transparent
+            onClick={() => navigate(option.link)} // Redirigimos al hacer clic
+          >
+              
+            <div className='small-space'>
+              <i>{option.icon}</i>
+              <span>{option.label}</span>
+            </div>
+          </button>
+          <hr className="small red-border" />
+        </div>
+        
         ))}
         
         {/* Aquí está el botón de logout */}

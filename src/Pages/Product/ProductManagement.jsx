@@ -107,7 +107,7 @@ const ProductManagement = () => {
   return (
     <main className="responsive">
       <aside className="right padding round" style={{ position: 'fixed' }}>
-        <button onClick={toggleDrawer} className="red4">
+        <button onClick={toggleDrawer} className="border pink-border orange-text">
           {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
         </button>
       </aside>
