@@ -7,61 +7,52 @@ import { Link, useNavigate } from "react-router-dom";
 import authService from "../../Services/authService";
 import Drawer from "../../MicroComponents/Drawer";
 
+
 const Home = () => {
   // Sacamos el usuario y token del contexto
   const { user, token, setUser, setToken } = useAuth();
-  // Acá creamos los estados pa' los productos, si estamos cargando o si hay error
-  const [data, setData] = useState([]); 
-  const [loading, setLoading] = useState(true); 
-  const [error, setError] = useState(null); 
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const isAuthenticated = !!token;  // Si hay token, ya ta logueado
   const navigate = useNavigate();  
 
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Estado pa' saber si el menú está abierto
-    const toggleDrawer = () => setIsDrawerOpen((prevState) => !prevState);
-
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false); // Estado pa' saber si el menú está abierto
+  const toggleDrawer = () => setIsDrawerOpen((prevState) => !prevState);
 
   const drawerOptions = [
-    { label: 'Crear Tarea', link: '/task/create', icon: 'create' },
-    { label: 'Login', link: '/login', icon: 'login' },
-    { label: 'Register', link: '/register', icon: 'person_add' },
-    { label: 'Cerrar Sesión', link: '/logout', icon: 'exit_to_app' },
+    ...(!isAuthenticated
+      ? [
+          { label: 'Login', link: '/login', icon: 'login' },
+          { label: 'Register', link: '/register', icon: 'person_add' },
+        ]
+      : []),
+    ...(isAuthenticated
+      ? [
+          { label: 'Crear Producto', link: '/product/create', icon: 'create' },
+        ]
+      : []),
   ];
+  
 
   // useEffect que se ejecuta pa' cargar los productos cuando el token cambia
   useEffect(() => {
     const fetchData = async () => {
       try {
         let response = isAuthenticated
-          ? await productService.getAllProducts(token)  // Si ta logueado, pedimos los productos con el token
-          : await productService.getAllProducts(); // Si no, los pedimos sin token
+          ? await productService.getAllProducts(token)
+          : await productService.getAllProducts();
 
-        console.log("📥 Datos recibidos:", response);
-
-        // Esto lo hacemos pa' actualizar los productos con los datos que recibimos
         setData(Array.isArray(response.data.products) ? response.data.products : []);
-        console.log(isAuthenticated ? "Si ta logueado" : "No ta logueado");
       } catch (error) {
-        setError(error.message); // Si hubo un error, lo guardamos
+        setError(error.message); 
       } finally {
-        setLoading(false); // Al final, le decimos que ya no estamos cargando
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [token]);  // Esto se vuelve a ejecutar cuando el token cambia
-
-  // Función pa' eliminar productos
-  const handleDelete = async (id) => {
-    try {
-      const response = await productService.deleteProduct(id, token); 
-      console.log("Producto eliminado:", response);
-      // Filtramos el producto eliminado de la lista
-      setData((prevData) => prevData.filter((product) => product.id !== id));
-    } catch (error) {
-      console.error("Error al eliminar el producto:", error.message);
-    }
-  };
+  }, [token]);
 
   // Función pa' cerrar sesión
   const handleLogout = async () => {
@@ -76,14 +67,7 @@ const Home = () => {
   // Si estamos cargando, mostramos el loader
   if (loading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
         <MutatingDots color="#00BFFF" height={100} width={100} />
       </div>
     );
@@ -97,29 +81,18 @@ const Home = () => {
   return (
     <main className="responsive">
       {/* Esto es pa' mostrar el nombre del usuario y las opciones si está logueado */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "20px",
-        }}>
-        <h1>Bienvenido, {user?.name || "Usuario"}</h1>        
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <h1>Bienvenido, {user?.name || "Usuario"}</h1>
         <button onClick={toggleDrawer}>
           {isDrawerOpen ? "Cerrar Menú" : "Abrir Menú"}
         </button>
 
-
-
-
         {isAuthenticated && (
           <div>
-            {/* Botón para crear un producto */}
             <Link to="/product/create">
               <button style={{ marginRight: "10px" }}>Crear Producto</button>
             </Link>
-            {/* Botón para cerrar sesión */}
-            <button onClick={handleLogout}>Cerrar Sesión</button>
+            <button onClick={handleLogout}>Cerrar Sesión</button> {/* Aquí se ejecuta handleLogout */}
           </div>
         )}
       </div>
@@ -129,42 +102,26 @@ const Home = () => {
         <p>No hay productos disponibles.</p>
       ) : (
         <div>
-          {/* Si hay productos, los mostramos en una lista */}
           {data.map((product, index) => (
             <article key={index} className="no-padding">
               <div className="grid no-space">
                 <div className="s4">
-                  {/* Imagen del producto */}
-                  <img
-                    src={product.url}
-                    alt={product.name}
-                    className="responsive"
-                  />
+                  <img src={product.url} alt={product.name} className="responsive" />
                 </div>
                 <div className="s6">
                   <div className="padding">
-                    <h5>
-                      {product.name} - ${product.price}
-                    </h5>
-                    <p>
-                      Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-                      sed do eiusmod tempor incididunt ut labore et dolore magna
-                      aliqua.
-                    </p>
+                    <h5>{product.name} - ${product.price}</h5>
+                    <p>Lorem ipsum dolor sit amet...</p>
                     <nav>
-                      {/* Enlace pa' ver detalles del producto */}
                       <Link to={`/product/${product.id}`}>
                         <button>Ver</button>
                       </Link>
                       {isAuthenticated && (
                         <>
-                          {/* Enlaces pa' editar y eliminar producto */}
                           <Link to={`/product/edit/${product.id}`}>
                             <button>Editar</button>
                           </Link>
-                          <button onClick={() => handleDelete(product.id)}>
-                            Eliminar
-                          </button>
+                          <button onClick={() => handleDelete(product.id)}>Eliminar</button>
                         </>
                       )}
                     </nav>
@@ -175,8 +132,15 @@ const Home = () => {
           ))}
         </div>
       )}
-            {isDrawerOpen && (
-        <Drawer options={drawerOptions} closeDrawer={toggleDrawer} />
+
+      
+      {isDrawerOpen && (
+        <Drawer
+          options={drawerOptions}
+          closeDrawer={toggleDrawer}
+          user={user}
+          handleLogout={handleLogout} // Pasamos handleLogout como prop
+        />
       )}
     </main>
   );
