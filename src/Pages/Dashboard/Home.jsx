@@ -7,6 +7,7 @@ import authService from "../../Services/authService";
 import Drawer from "../../MicroComponents/Drawer";
 import useNavigation from "../../Routes/Navigation";
 import Header from "../../MicroComponents/Header";
+import ReactStars from "react-stars";
 
 const Home = () => {
   const { user, token, setUser, setToken } = useAuth();
@@ -39,7 +40,12 @@ const Home = () => {
           ? await productService.getAllProducts(token)
           : await productService.getAllProducts();
 
-        setData(Array.isArray(response.data.products) ? response.data.products : []);
+        // Ordenar los productos por su calificación promedio (de mayor a menor)
+        const sortedProducts = response.data.products.sort((a, b) => {
+          return b.average_rating - a.average_rating;
+        });
+
+        setData(Array.isArray(sortedProducts) ? sortedProducts : []);
       } catch (error) {
         setError(error.message);
       } finally {
@@ -50,10 +56,13 @@ const Home = () => {
     fetchData();
   }, [token]);
 
-
-
   // Función para mostrar un Snackbar personalizado
-  const showSnackbar = (message, color = "blue", icon = "info", duration = 4000) => {
+  const showSnackbar = (
+    message,
+    color = "blue",
+    icon = "info",
+    duration = 4000
+  ) => {
     const snackbar = document.createElement("div");
     snackbar.className = `snackbar active ${color}`; // Agregamos el color como clase
     snackbar.innerHTML = `
@@ -86,26 +95,33 @@ const Home = () => {
         </nav>
       `;
       document.body.appendChild(confirmSnackbar);
-  
+
       // Función para manejar la confirmación de eliminación
       window.handleConfirmDelete = async (id) => {
         try {
           // Llamar al servicio para eliminar el producto
           await productService.deleteProduct(id, token);
-  
+
           // Actualizar el estado local eliminando el producto
-          setData((prevData) => prevData.filter((product) => product.id !== id));
-  
+          setData((prevData) =>
+            prevData.filter((product) => product.id !== id)
+          );
+
           // Mostrar un Snackbar de éxito
           showSnackbar("Producto eliminado con éxito", "green", "check_circle");
         } catch (error) {
           console.error("Error al eliminar el producto:", error);
-          showSnackbar("Hubo un error al eliminar el producto", "red", "error", 6000);
+          showSnackbar(
+            "Hubo un error al eliminar el producto",
+            "red",
+            "error",
+            6000
+          );
         } finally {
           document.body.removeChild(confirmSnackbar); // Cerrar el Snackbar de confirmación
         }
       };
-  
+
       // Función para manejar la cancelación
       window.handleCancelDelete = () => {
         document.body.removeChild(confirmSnackbar); // Cerrar el Snackbar de confirmación
@@ -118,7 +134,14 @@ const Home = () => {
   // Si estamos cargando, mostramos el loader
   if (loading) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
         <MutatingDots color="#00BFFF" height={100} width={100} />
       </div>
     );
@@ -132,7 +155,54 @@ const Home = () => {
   return (
     <main className="responsive surface-dim">
       {/* Esto es pa' mostrar el nombre del usuario y las opciones si está logueado */}
-      <Header goToHome={goToHome} toggleDrawer={toggleDrawer} isDrawerOpen={isDrawerOpen} drawerOptions={drawerOptions} />
+      <Header
+        goToHome={goToHome}
+        toggleDrawer={toggleDrawer}
+        isDrawerOpen={isDrawerOpen}
+        drawerOptions={drawerOptions}
+      />
+
+      {/* Sección de productos mejor calificados */}
+      {/* <h2>Productos mejor calificados</h2>
+      <div className="row scroll">
+        {data.slice(0, 5).map(
+          (
+            product,
+            index // Mostrar solo los primeros 5 productos
+          ) => (
+            <article
+              key={index}
+              className="no-padding border tertiary-border transparent"
+            >
+              <div className="grid no-space">
+                <div className="s4">
+                  <img
+                    src={product.url}
+                    alt={product.name}
+                    className="responsive small"
+                  />
+                </div>
+                <div className="s6">
+                  <div className="padding">
+                    <h5>
+                      {product.name} - ${product.price}
+                    </h5>
+                    <p>⭐ {product.average_rating || "Sin calificación"}</p>
+                    <nav className="small-space row">
+                      <Link to={`/product/${product.id}`}>
+                        <button className="border light-blue-border cyan-text">
+                          Ver
+                        </button>
+                      </Link>
+                    </nav>
+                  </div>
+                </div>
+              </div>
+            </article>
+          )
+        )}
+      </div> */}
+      <div className="medium-space"></div>
 
       {/* Si no hay productos, mostramos esto */}
       {data.length === 0 ? (
@@ -140,25 +210,50 @@ const Home = () => {
       ) : (
         <div>
           {data.map((product, index) => (
-            <article key={index} className="no-padding border tertiary-border transparent">
+            <article
+              key={index}
+              className="no-padding border tertiary-border transparent"
+            >
               <div className="grid no-space">
                 <div className="s4">
-                  <img src={product.url} alt={product.name} className="responsive" />
+                  <img
+                    src={product.url}
+                    alt={product.name}
+                    className="responsive"
+                  />
                 </div>
                 <div className="s6">
                   <div className="padding">
-                    <h5>{product.name} - ${product.price}</h5>
-                    <p>{product.description}</p>
+                    <h5>
+                      {product.name} - ${product.price}
+                    </h5>
+                    <p>{product.description} </p>
+                    <p>
+                      <ReactStars
+                        count={5}
+                        value={product.average_rating || 0}
+                        size={24}
+                        edit={false}
+                        color2={"#ffd700"}
+                      />
+                    </p>
                     <nav className="small-space row">
                       <Link to={`/product/${product.id}`}>
-                        <button className="border light-blue-border cyan-text">Ver</button>
+                        <button className="border light-blue-border cyan-text">
+                          Ver
+                        </button>
                       </Link>
                       {isAuthenticated && (
                         <>
                           <Link to={`/product/edit/${product.id}`}>
-                            <button className="border lime-border amber-text">Editar</button>
+                            <button className="border lime-border amber-text">
+                              Editar
+                            </button>
                           </Link>
-                          <button className="border pink-border red-text" onClick={() => handleDelete(product.id)}>
+                          <button
+                            className="border pink-border red-text"
+                            onClick={() => handleDelete(product.id)}
+                          >
                             Eliminar
                           </button>
                         </>
